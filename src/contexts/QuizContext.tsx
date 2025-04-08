@@ -1,11 +1,14 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Quiz, QuizQuestion } from '../types/quiz';
+import { Quiz, QuizQuestion, QuizAttempt } from '../types/quiz';
 
 interface QuizContextType {
   quizzes: Quiz[];
+  quizAttempts: QuizAttempt[];
   addQuiz: (quiz: Quiz) => void;
   getQuiz: (id: string) => Quiz | undefined;
+  addQuizAttempt: (attempt: QuizAttempt) => void;
+  getQuizAttempts: (quizId?: string) => QuizAttempt[];
 }
 
 const QuizContext = createContext<QuizContextType | undefined>(undefined);
@@ -40,6 +43,8 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     },
   ]);
 
+  const [quizAttempts, setQuizAttempts] = useState<QuizAttempt[]>([]);
+
   const addQuiz = (quiz: Quiz) => {
     setQuizzes([...quizzes, quiz]);
   };
@@ -48,8 +53,26 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     return quizzes.find((quiz) => quiz.id === id);
   };
 
+  const addQuizAttempt = (attempt: QuizAttempt) => {
+    setQuizAttempts([...quizAttempts, attempt]);
+  };
+
+  const getQuizAttempts = (quizId?: string) => {
+    if (quizId) {
+      return quizAttempts.filter(attempt => attempt.quizId === quizId);
+    }
+    return quizAttempts;
+  };
+
   return (
-    <QuizContext.Provider value={{ quizzes, addQuiz, getQuiz }}>
+    <QuizContext.Provider value={{ 
+      quizzes, 
+      addQuiz, 
+      getQuiz, 
+      quizAttempts,
+      addQuizAttempt, 
+      getQuizAttempts 
+    }}>
       {children}
     </QuizContext.Provider>
   );

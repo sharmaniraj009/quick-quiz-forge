@@ -6,11 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/components/ui/use-toast';
 import { useQuiz } from '../contexts/QuizContext';
 import { Progress } from '@/components/ui/progress';
+import { QuizAttempt } from '../types/quiz';
+import { v4 as uuidv4 } from 'uuid';
 
 const QuizTaking = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getQuiz } = useQuiz();
+  const { getQuiz, addQuizAttempt } = useQuiz();
   const { toast } = useToast();
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -20,6 +22,8 @@ const QuizTaking = () => {
   const [answers, setAnswers] = useState<number[]>([]);
   const [timer, setTimer] = useState(15);
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
+  const [startTime] = useState<number>(Date.now());
+  const [timeSpent, setTimeSpent] = useState(0);
 
   const quiz = getQuiz(id || '');
   
@@ -51,6 +55,14 @@ const QuizTaking = () => {
     
     return () => clearInterval(interval);
   }, [currentQuestionIndex, quiz, showResults, isAnswerRevealed]);
+
+  // Update time spent
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeSpent(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [startTime]);
 
   if (!quiz) return null;
 
@@ -90,6 +102,25 @@ const QuizTaking = () => {
       setIsAnswerRevealed(false);
     } else {
       setShowResults(true);
+      
+      // Save quiz attempt
+      const quizAttempt: QuizAttempt = {
+        id: uuidv4(),
+        quizId: quiz.id,
+        date: new Date().toISOString(),
+        score,
+        totalQuestions: quiz.questions.length,
+        answers,
+        timeSpent,
+      };
+      
+      addQuizAttempt(quizAttempt);
+      
+      toast({
+        title: "Quiz Completed!",
+        description: "Your results have been saved.",
+        variant: "default",
+      });
     }
   };
 
@@ -100,6 +131,11 @@ const QuizTaking = () => {
     setShowResults(false);
     setAnswers([]);
     setIsAnswerRevealed(false);
+    setTimeSpent(0);
+  };
+
+  const handleViewAnalytics = () => {
+    navigate(`/analytics/${quiz.id}`);
   };
 
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100;
@@ -122,6 +158,9 @@ const QuizTaking = () => {
                 : score > quiz.questions.length / 2 
                   ? "Well done!" 
                   : "Better luck next time!"}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Time taken: {Math.floor(timeSpent / 60)}m {timeSpent % 60}s
             </p>
           </div>
           
@@ -150,10 +189,18 @@ const QuizTaking = () => {
             ))}
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => navigate('/')}>
-            Back to Home
-          </Button>
+        <CardFooter className="flex flex-wrap gap-2 justify-between">
+          <div>
+            <Button variant="outline" onClick={() => navigate('/')} className="mr-2">
+              Back to Home
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleViewAnalytics}
+            >
+              View Analytics
+            </Button>
+          </div>
           <Button 
             onClick={handleRetry}
             className="bg-quiz-primary hover:bg-quiz-primary/90"

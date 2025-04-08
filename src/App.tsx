@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Create from "./pages/Create";
 import QuizList from "./pages/QuizList";
 import Quiz from "./pages/Quiz";
+import QuizAnalyticsPage from "./pages/QuizAnalyticsPage";
 import NotFound from "./pages/NotFound";
 import NavBar from "./components/NavBar";
 
@@ -32,6 +33,7 @@ const App: React.FC = () => {
                 <Route path="/create" element={<Create />} />
                 <Route path="/quizzes" element={<QuizList />} />
                 <Route path="/quiz/:id" element={<Quiz />} />
+                <Route path="/analytics/:id" element={<QuizAnalyticsPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
