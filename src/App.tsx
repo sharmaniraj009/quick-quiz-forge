@@ -11,6 +11,7 @@ import Create from "./pages/Create";
 import QuizList from "./pages/QuizList";
 import Quiz from "./pages/Quiz";
 import NotFound from "./pages/NotFound";
+import NavBar from "./components/NavBar";
 
 // Initialize the query client outside of the component
 const queryClient = new QueryClient();
@@ -24,13 +25,16 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/create" element={<Create />} />
-              <Route path="/quizzes" element={<QuizList />} />
-              <Route path="/quiz/:id" element={<Quiz />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <NavBar />
+            <div className="pt-4">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/create" element={<Create />} />
+                <Route path="/quizzes" element={<QuizList />} />
+                <Route path="/quiz/:id" element={<Quiz />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
           </BrowserRouter>
         </TooltipProvider>
       </QuizProvider>
