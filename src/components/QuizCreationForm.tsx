@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Quiz, QuizQuestion } from '../types/quiz';
+import { QuizQuestion, NewQuiz } from '../types/quiz';
 import { useQuiz } from '../contexts/QuizContext';
 import { Separator } from '@/components/ui/separator';
 import { Trash } from 'lucide-react';
@@ -25,6 +24,7 @@ const QuizCreationForm = () => {
       correctAnswer: 0,
     },
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddQuestion = () => {
     setQuestions([
@@ -69,7 +69,7 @@ const QuizCreationForm = () => {
     setQuestions(newQuestions);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
@@ -119,22 +119,33 @@ const QuizCreationForm = () => {
     if (!isValid) return;
 
     // Create quiz
-    const newQuiz: Quiz = {
-      id: Date.now().toString(),
-      title,
-      description,
-      questions: questions.map((q, index) => ({
-        ...q,
-        id: `${Date.now()}-${index}`,
-      })),
-    };
+    setIsSubmitting(true);
+    
+    try {
+      const newQuiz: NewQuiz = {
+        title,
+        description,
+        questions: questions.map((q, index) => ({
+          ...q,
+          id: `${Date.now()}-${index}`,
+        })),
+      };
 
-    addQuiz(newQuiz);
-    toast({
-      title: "Quiz Created!",
-      description: "Your quiz has been created successfully.",
-    });
-    navigate('/');
+      const quizId = await addQuiz(newQuiz);
+      
+      if (quizId) {
+        navigate('/quizzes');
+      }
+    } catch (error) {
+      console.error("Error creating quiz:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create quiz. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
