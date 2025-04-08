@@ -12,6 +12,3 @@ export interface Quiz {
   description: string;
   questions: QuizQuestion[];
 }
-
-// Type for creating a new quiz (without ID)
-export type NewQuiz = Omit<Quiz, "id">;
